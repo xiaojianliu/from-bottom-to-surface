@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Oct 26 14:15:03 2015
-the function about how to get and compare the drifter and model data
-@author: qianran
+the function needed for the "from_bottom_to_surface" program
+@authors: Qianran, Bingwei, Xiaojian, and other before them 
 """
 import sys
 import datetime as dt
@@ -66,6 +66,7 @@ def nearest_point( lon, lat, lons, lats, length):  #0.3/5==0.06
         lonp = insidep[mindex][0]; latp = insidep[mindex][1]
         
         return lonp,latp
+# You should remove all functions not being used    
 def getrawdrift(did,filename):
    '''
    routine to get raw drifter data from ascii files posted on the web
@@ -773,7 +774,7 @@ class get_fvcom():
             depth_total = self.siglay[:,nodeindex]*waterdepth; #print 'Here one' 
             for xx in np.arange(600):
                     if waterdepth<(abs(depth)):
-                        depth=depth+5
+                        depth=depth+5 # this "5" should be a hard code
                     if waterdepth<(abs(depth)):
                         continue
                     else:
@@ -799,7 +800,8 @@ class get_fvcom():
             lonk,latk = self.shrink_data(lon,lat,self.lons,self.lats,1)
             u_t1 = self.u[i,layer,elementindex][0]; v_t1 = self.v[i,layer,elementindex][0]
             u_t2 = self.u[i-1,layer,elementindex][0]; v_t2 = self.v[i-1,layer,elementindex][0]
-            u_t = -(u_t1+u_t2)/2; v_t = -(v_t1+v_t2)/2
+            w_t1 = self.w[i-1,layer,elementindex][0]; w_t2 = self.w[i-1,layer,elementindex][0]
+            u_t = -(u_t1+u_t2)/2; v_t = -(v_t1+v_t2)/2; w_t = -(w_t1+w_t2)/2
             
             #u_t,v_t = self.uvt(u_t1,v_t1,u_t2,v_t2)
 
@@ -807,7 +809,8 @@ class get_fvcom():
             #print 'starttime',starttimes
             if wind==0:
 
-                dx = 60*60*u_t; dy = 60*60*v_t;dz=60*60*w
+                dx = 60*60*u_t; dy = 60*60*v_t;
+                dz=60*60*(w+w_t) # where, in the wind=0 case, we have added the descent rate 'w' and the model 'w_t'
             else:
                 if wind_get_type=='NCEP':
                     v_wind,u_wind=self.get_wind_ncep(starttimes,lat,lon)
