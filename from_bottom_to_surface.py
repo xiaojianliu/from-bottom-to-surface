@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Dec  5 10:22:54 2016
-
-@author: hxu
-"""
-# -*- coding: utf-8 -*-
-"""
 Created on Thu Oct  6 16:34:20 2016
-
+Back tracks particles from the bottom of the ocean to the surface.
+Given a set of points on the bottom and a specified "descent rate", it plots the origin of these particles.
 @author: xiaojian
 """
 
@@ -23,18 +18,17 @@ from Back_forecast_function import get_fvcom,sh_bindata1,nearest_point1
 ######## Hard codes ##########
 Model='30yr'
 point_data=[]
-num=1#how many point do you want forecast
+num=1#how many points do you want forecast
 end_times=dt.datetime(2010,5,1)
-w=0.0001 #m/s
-wind_get_type='FVCOM'#'NCEP'
-wind=0
+w=0.0001 #specified positive decent rate in m/s
+wind_get_type='FVCOM'#source of wind data if used 'NCEP' 
+wind=0 #set to zero if wind is not used
 data_type='hourly'
-FNCL='necscoast_worldvec.dat'
-add_model_w='yes'
-data = np.genfromtxt('sea.csv',dtype=None,names=['x','y','h'],delimiter=',')    
-x=[]
-y=[]
-h=[]
+FNCL='necscoast_worldvec.dat' #coastline data
+add_model_w='yes' # set to 'yes' if model's vertical velocity, w, is used in the particle tracking in addition to u & v
+# Note: the following 15 lines should be a function because it is something you might use in other programs
+#
+data = np.genfromtxt('sea.csv',dtype=None,names=['x','y','h'],delimiter=',')   # what is this? 
 x=data['x']
 y=data['y']
 h=data['h']
@@ -49,6 +43,7 @@ plt.clabel(CS, inline=1, fontsize=8,fmt='%4.0f')
 plt.axis([-78,-55,34,46],linewidth=0.5)
 CL=np.genfromtxt(FNCL,names=['lon','lat'])
 plt.plot(CL['lon'],CL['lat'],'b-',linewidth=0.5)
+#
 tongji=0
 for a in np.arange(312):#313
     print 'a',a 
