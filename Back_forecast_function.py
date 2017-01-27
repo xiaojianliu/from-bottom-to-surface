@@ -741,6 +741,10 @@ class get_fvcom():
     def get_track(self,lon,lat,depth,starttime,wind,wind_get_type,w1): #,b_index,nvdepth, 
         '''
         Get forecast points start at lon,lat
+        includes model w 
+        where wind=0 for no correction
+        where wind_get_type='FVCOM' for example
+        where this code needs to be cleaned up becasue we do not understand "windspeed"
         '''
         windspeed=[]
         modpts = dict(lon=[lon], lat=[lat], layer=[], time=[],deep=[depth]) #model forecast points
@@ -774,15 +778,15 @@ class get_fvcom():
             pa = self.eline_path(lon,lat)# boundary 
 
             if self.modelname == "30yr":
-                waterdepth = self.h[nodeindex]
+                waterdepth = self.h[nodeindex] #model depth
             else:
                 waterdepth = self.h[nodeindex]+self.zeta[0,nodeindex]
             
             modpts['time'].append(self.mTime[0])
-            depth_total = self.siglay[:,nodeindex]*waterdepth; #print 'Here one' 
+            depth_total = self.siglay[:,nodeindex]*waterdepth; #particle depth 
             for xx in np.arange(600):
                     if waterdepth<(abs(depth)):
-                        depth=depth+5
+                        depth=depth+5 #kicking particle off bottom by 5 meters
                     if waterdepth<(abs(depth)):
                         continue
                     else:
@@ -810,7 +814,7 @@ class get_fvcom():
             u_t2 = self.u[i-1,layer,elementindex][0]; v_t2 = self.v[i-1,layer,elementindex][0]
             u_t = -(u_t1+u_t2)/2; v_t = -(v_t1+v_t2)/2
             w_t1=self.ww[i,layer,nodeindex][0]
-            w_t2=self.ww[i,layer,nodeindex][0]
+            w_t2=self.ww[i-1,layer,nodeindex][0]
             #u_t,v_t = self.uvt(u_t1,v_t1,u_t2,v_t2)
             w=-(w_t1+w_t2)/2
             starttimes=starttime+timedelta(hours=i)
@@ -853,8 +857,9 @@ class get_fvcom():
                         meanwindspeed=windspeed
                     else:
                         print 34
-                        meanwindspeed=np.mean(windspeed)                 
-                    return modpts,meanwindspeed
+                        meanwindspeed=np.mean(windspeed) 
+                    outside=1    
+                    return modpts,outside
 
 
             lon = temlon; lat = temlat
@@ -897,21 +902,21 @@ class get_fvcom():
                 modpts['deep'].append(depth+sum_deep)
                 if depth+sum_deep>=0:
                  
-                    return modpts,meanwindspeed
+                    return modpts,outside
                     break
                 
                 if waterdepth<(abs(depth)):
                     print 'This point hits the land here.Less than %d meter.'%abs(depth)
                     raise Exception()
             except:
-                return modpts 
+                return modpts,outside
         if len(windspeed)<2:
             print 12
             meanwindspeed=windspeed
         else:
             print 34
             meanwindspeed=np.mean(windspeed)                 
-        return modpts,meanwindspeed
+        return modpts,outside
     def get_track1(self,lon,lat,depth,starttime,wind,wind_get_type,w1): #,b_index,nvdepth, 
         '''
         Get forecast points start at lon,lat
